@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/txthinking/socks5"
+	"github.com/liran/socks5"
 )
 
 func TestExampleServer(t *testing.T) {

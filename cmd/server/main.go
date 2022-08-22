@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/txthinking/socks5"
+	"github.com/liran/socks5"
 )
 
 func main() {
