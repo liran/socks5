@@ -38,13 +38,13 @@ func ParseAddress(address string) (a byte, addr []byte, port []byte, err error) 
 // addr contains domain length
 func ParseBytesAddress(b []byte) (a byte, addr []byte, port []byte, err error) {
 	if len(b) < 1 {
-		err = errors.New("Invalid address")
+		err = errors.New("invalid address")
 		return
 	}
 	a = b[0]
 	if a == ATYPIPv4 {
 		if len(b) < 1+4+2 {
-			err = errors.New("Invalid address")
+			err = errors.New("invalid address")
 			return
 		}
 		addr = b[1 : 1+4]
@@ -53,7 +53,7 @@ func ParseBytesAddress(b []byte) (a byte, addr []byte, port []byte, err error) {
 	}
 	if a == ATYPIPv6 {
 		if len(b) < 1+16+2 {
-			err = errors.New("Invalid address")
+			err = errors.New("invalid address")
 			return
 		}
 		addr = b[1 : 1+16]
@@ -62,19 +62,19 @@ func ParseBytesAddress(b []byte) (a byte, addr []byte, port []byte, err error) {
 	}
 	if a == ATYPDomain {
 		if len(b) < 1+1 {
-			err = errors.New("Invalid address")
+			err = errors.New("invalid address")
 			return
 		}
 		l := int(b[1])
 		if len(b) < 1+1+l+2 {
-			err = errors.New("Invalid address")
+			err = errors.New("invalid address")
 			return
 		}
 		addr = b[1 : 1+1+l]
 		port = b[1+1+l : 1+1+l+2]
 		return
 	}
-	err = errors.New("Invalid address")
+	err = errors.New("invalid address")
 	return
 }
 
