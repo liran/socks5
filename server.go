@@ -41,8 +41,6 @@ type Server struct {
 	RunnerGroup       *runnergroup.RunnerGroup
 	// RFC: [UDP ASSOCIATE] The server MAY use this information to limit access to the association. Default false, no limit.
 	LimitUDP bool
-
-	PublicIP string
 }
 
 // UDPExchange used to store client address and remote connection
@@ -52,11 +50,7 @@ type UDPExchange struct {
 }
 
 // NewClassicServer return a server which allow none method
-func NewClassicServer(addr, ip, username, password string, tcpTimeout, udpTimeout int) (*Server, error) {
-	_, p, err := net.SplitHostPort(addr)
-	if err != nil {
-		return nil, err
-	}
+func NewClassicServer(addr, username, password string, tcpTimeout, udpTimeout int) (*Server, error) {
 	taddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
 		return nil, err
@@ -65,7 +59,7 @@ func NewClassicServer(addr, ip, username, password string, tcpTimeout, udpTimeou
 	if err != nil {
 		return nil, err
 	}
-	saddr, err := net.ResolveUDPAddr("udp", net.JoinHostPort(ip, p))
+	saddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +84,6 @@ func NewClassicServer(addr, ip, username, password string, tcpTimeout, udpTimeou
 		AssociatedUDP:     cs1,
 		UDPSrc:            cs2,
 		RunnerGroup:       runnergroup.New(),
-		PublicIP:          ip,
 	}
 	return s, nil
 }
@@ -290,7 +283,7 @@ type DefaultHandle struct {
 // TCPHandle auto handle request. You may prefer to do yourself.
 func (h *DefaultHandle) TCPHandle(s *Server, c *net.TCPConn, r *Request) error {
 	if r.Cmd == CmdConnect {
-		rc, err := r.Connect(c, s.PublicIP)
+		rc, err := r.Connect(c)
 		if err != nil {
 			return err
 		}

@@ -12,7 +12,7 @@ import (
 )
 
 func TestExampleServer(t *testing.T) {
-	s, err := socks5.NewClassicServer(":1080", "127.0.0.1", "", "", 0, 60)
+	s, err := socks5.NewClassicServer(":1080", "", "", 0, 60)
 	if err != nil {
 		t.Fatal(err)
 	}

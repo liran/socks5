@@ -7,12 +7,12 @@ import (
 	"net"
 )
 
-func Dial(network, addr, localPublicIP string) (net.Conn, error) {
-	lAddr, err := net.ResolveTCPAddr(network, fmt.Sprintf("%s:0", localPublicIP))
+func Dial(network, remoteAddr, localIP string) (net.Conn, error) {
+	lAddr, err := net.ResolveTCPAddr(network, fmt.Sprintf("%s:0", localIP))
 	if err != nil {
 		return nil, err
 	}
-	rAddr, err := net.ResolveTCPAddr(network, addr)
+	rAddr, err := net.ResolveTCPAddr(network, remoteAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -25,11 +25,17 @@ func Dial(network, addr, localPublicIP string) (net.Conn, error) {
 
 // Connect remote conn which u want to connect with your dialer
 // Error or OK both replied.
-func (r *Request) Connect(w io.Writer, publicIP string) (*net.TCPConn, error) {
+func (r *Request) Connect(c *net.TCPConn) (*net.TCPConn, error) {
+	w := io.Writer(c)
 	if Debug {
 		log.Println("Call:", r.Address())
 	}
-	tmp, err := Dial("tcp", r.Address(), publicIP)
+	localAddr := c.LocalAddr().String()
+	localIP, _, err := net.SplitHostPort(localAddr)
+	if err != nil {
+		return nil, err
+	}
+	tmp, err := Dial("tcp", r.Address(), localIP)
 	if err != nil {
 		var p *Reply
 		if r.Atyp == ATYPIPv4 || r.Atyp == ATYPDomain {
