@@ -1,18 +1,35 @@
 package socks5
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
 )
 
+func Dial(network, addr, localPublicIP string) (net.Conn, error) {
+	lAddr, err := net.ResolveTCPAddr(network, fmt.Sprintf("%s:0", localPublicIP))
+	if err != nil {
+		return nil, err
+	}
+	rAddr, err := net.ResolveTCPAddr(network, addr)
+	if err != nil {
+		return nil, err
+	}
+	conn, err := net.DialTCP(network, lAddr, rAddr)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
+}
+
 // Connect remote conn which u want to connect with your dialer
 // Error or OK both replied.
-func (r *Request) Connect(w io.Writer) (*net.TCPConn, error) {
+func (r *Request) Connect(w io.Writer, publicIP string) (*net.TCPConn, error) {
 	if Debug {
 		log.Println("Call:", r.Address())
 	}
-	tmp, err := Dial.Dial("tcp", r.Address())
+	tmp, err := Dial("tcp", r.Address(), publicIP)
 	if err != nil {
 		var p *Reply
 		if r.Atyp == ATYPIPv4 || r.Atyp == ATYPDomain {

@@ -6,14 +6,15 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"testing"
 
 	"github.com/txthinking/socks5"
 )
 
-func ExampleServer() {
-	s, err := socks5.NewClassicServer("127.0.0.1:1080", "127.0.0.1", "", "", 0, 60)
+func TestExampleServer(t *testing.T) {
+	s, err := socks5.NewClassicServer(":1080", "127.0.0.1", "", "", 0, 60)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	// You can pass in custom Handler
 	s.ListenAndServe(nil)

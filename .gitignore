@@ -26,3 +26,9 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+
+dist
+deploy
+.terraform*
+terraform.tfstate*

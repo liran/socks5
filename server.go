@@ -41,6 +41,8 @@ type Server struct {
 	RunnerGroup       *runnergroup.RunnerGroup
 	// RFC: [UDP ASSOCIATE] The server MAY use this information to limit access to the association. Default false, no limit.
 	LimitUDP bool
+
+	PublicIP string
 }
 
 // UDPExchange used to store client address and remote connection
@@ -88,6 +90,7 @@ func NewClassicServer(addr, ip, username, password string, tcpTimeout, udpTimeou
 		AssociatedUDP:     cs1,
 		UDPSrc:            cs2,
 		RunnerGroup:       runnergroup.New(),
+		PublicIP:          ip,
 	}
 	return s, nil
 }
@@ -287,7 +290,7 @@ type DefaultHandle struct {
 // TCPHandle auto handle request. You may prefer to do yourself.
 func (h *DefaultHandle) TCPHandle(s *Server, c *net.TCPConn, r *Request) error {
 	if r.Cmd == CmdConnect {
-		rc, err := r.Connect(c)
+		rc, err := r.Connect(c, s.PublicIP)
 		if err != nil {
 			return err
 		}
@@ -390,12 +393,12 @@ func (h *DefaultHandle) UDPHandle(s *Server, addr *net.UDPAddr, d *Datagram) err
 	if err != nil {
 		return err
 	}
-	rc, err := Dial.DialUDP("udp", laddr, raddr)
+	rc, err := net.DialUDP("udp", laddr, raddr)
 	if err != nil {
 		if !strings.Contains(err.Error(), "address already in use") {
 			return err
 		}
-		rc, err = Dial.DialUDP("udp", nil, raddr)
+		rc, err = net.DialUDP("udp", nil, raddr)
 		if err != nil {
 			return err
 		}
