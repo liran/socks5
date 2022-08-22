@@ -1,16 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/liran/socks5"
 )
 
 func main() {
-	s, err := socks5.NewClassicServer(":1080", "", "", 0, 60)
+	username := os.Getenv("USERNAME")
+	password := os.Getenv("PASSWORD")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "1080"
+	}
+	s, err := socks5.NewClassicServer(fmt.Sprintf(":%s", port), username, password, 0, 60)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// You can pass in custom Handler
+
+	log.Printf("server listen at %s", port)
 	s.ListenAndServe(nil)
 }
