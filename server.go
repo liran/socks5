@@ -12,6 +12,7 @@ import (
 
 	cache "github.com/patrickmn/go-cache"
 	"github.com/txthinking/runnergroup"
+	"go.uber.org/atomic"
 )
 
 var (
@@ -23,7 +24,7 @@ var (
 
 // Server is socks5 server wrapper
 type Server struct {
-	UserName          string
+	Username          string
 	Password          string
 	Method            byte
 	SupportedCommands []byte
@@ -41,6 +42,7 @@ type Server struct {
 	RunnerGroup       *runnergroup.RunnerGroup
 	// RFC: [UDP ASSOCIATE] The server MAY use this information to limit access to the association. Default false, no limit.
 	LimitUDP bool
+	Online   atomic.Int64
 }
 
 // UDPExchange used to store client address and remote connection
@@ -72,7 +74,7 @@ func NewClassicServer(addr, username, password string, tcpTimeout, udpTimeout in
 	cs2 := cache.New(cache.NoExpiration, cache.NoExpiration)
 	s := &Server{
 		Method:            m,
-		UserName:          username,
+		Username:          username,
 		Password:          password,
 		SupportedCommands: []byte{CmdConnect, CmdUDP},
 		TCPAddr:           taddr,
@@ -119,7 +121,7 @@ func (s *Server) Negotiate(rw io.ReadWriter) error {
 		if err != nil {
 			return err
 		}
-		if string(urq.Uname) != s.UserName || string(urq.Passwd) != s.Password {
+		if string(urq.Uname) != s.Username || string(urq.Passwd) != s.Password {
 			urp := NewUserPassNegotiationReply(UserPassStatusFailure)
 			if _, err := urp.WriteTo(rw); err != nil {
 				return err
@@ -209,6 +211,11 @@ func (s *Server) RunTCPServer() error {
 			return err
 		}
 		go func(c *net.TCPConn) {
+			s.Online.Inc()
+			defer func() {
+				s.Online.Dec()
+			}()
+
 			defer c.Close()
 			if s.TCPTimeout != 0 {
 				if err := c.SetDeadline(time.Now().Add(time.Duration(s.TCPTimeout) * time.Second)); err != nil {
