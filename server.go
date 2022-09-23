@@ -42,7 +42,10 @@ type Server struct {
 	RunnerGroup       *runnergroup.RunnerGroup
 	// RFC: [UDP ASSOCIATE] The server MAY use this information to limit access to the association. Default false, no limit.
 	LimitUDP bool
-	Online   atomic.Int64
+
+	// Huski.ai Business logic
+	Online            atomic.Int64
+	LastConnCloseTime atomic.Time
 }
 
 // UDPExchange used to store client address and remote connection
@@ -214,6 +217,8 @@ func (s *Server) RunTCPServer() error {
 			s.Online.Inc()
 			defer func() {
 				s.Online.Dec()
+
+				s.LastConnCloseTime.Store(time.Now())
 			}()
 
 			defer c.Close()
